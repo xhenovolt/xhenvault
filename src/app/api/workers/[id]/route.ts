@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "../../../../lib/db";
+import { query } from "../../../../lib/mysql";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const worker = await query("SELECT * FROM workers WHERE id = ?", [params.id]);
