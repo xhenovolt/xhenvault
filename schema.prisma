@@ -1,0 +1,359 @@
+```prisma
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model users {
+  id          Int      @id @default(autoincrement())
+  firstname   String
+  lastname    String
+  username    String   @unique
+  email       String?
+  phone       String?
+  role        users_role   @default(staff)
+  status      users_status @default(active)
+  password    String?
+  created_at  DateTime @default(now())
+  // relations
+  transactions transactions[] @relation("created_by")
+  events      events[]      @relation("created_by")
+  tasks       tasks[]       @relation("assigned_to")
+  documents   documents[]   @relation("uploaded_by")
+}
+
+enum users_role {
+  admin
+  manager
+  staff
+}
+
+enum users_status {
+  active
+  inactive
+}
+
+model companies {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  created_at  DateTime @default(now())
+  branches    branches[]
+  clients     clients[]
+  wallets     wallets[]
+}
+
+model branches {
+  id         Int      @id @default(autoincrement())
+  company_id Int
+  name       String
+  location   String?
+  company    companies @relation(fields: [company_id], references: [id])
+}
+
+model prospects {
+  id         Int      @id @default(autoincrement())
+  name       String
+  contact    String?
+  email      String?
+  status     prospects_status @default(new)
+  source     String?
+  created_at DateTime @default(now())
+  clients    clients[]
+}
+
+enum prospects_status {
+  new
+  contacted
+  interested
+  converted
+  lost
+}
+
+model clients {
+  id         Int      @id @default(autoincrement())
+  prospect_id Int?
+  company_id Int?
+  name       String
+  contact    String?
+  email      String?
+  status     clients_status @default(active)
+  start_date DateTime?
+  prospect   prospects? @relation(fields: [prospect_id], references: [id])
+  company    companies? @relation(fields: [company_id], references: [id])
+  deals      deals[]
+  created_at DateTime @default(now())
+}
+
+enum clients_status {
+  active
+  inactive
+}
+
+model deals {
+  id            Int      @id @default(autoincrement())
+  client_id     Int
+  title         String
+  amount        Decimal
+  status        deals_status @default(pending)
+  expected_close DateTime?
+  actual_close  DateTime?
+  created_at    DateTime @default(now())
+  client        clients @relation(fields: [client_id], references: [id])
+  invoices      invoices[]
+}
+
+enum deals_status {
+  pending
+  won
+  lost
+}
+
+model invoices {
+  id            Int      @id @default(autoincrement())
+  deal_id       Int
+  invoice_number String  @unique
+  amount        Decimal
+  due_date      DateTime?
+  status        invoices_status @default(unpaid)
+  created_at    DateTime @default(now())
+  deal          deals @relation(fields: [deal_id], references: [id])
+}
+
+enum invoices_status {
+  unpaid
+  partial
+  paid
+}
+
+model wallets {
+  id         Int      @id @default(autoincrement())
+  company_id Int?
+  name       String?
+  type       wallets_type @default(cash)
+  balance    Decimal @default(0)
+  company    companies? @relation(fields: [company_id], references: [id])
+  transactions transactions[]
+  cashflow_rules cashflow_rules[]
+  allocation_logs allocation_logs[]
+  budgets     budgets[]
+}
+
+enum wallets_type {
+  cash
+  bank
+  mobile
+}
+
+model transactions {
+  id          Int      @id @default(autoincrement())
+  wallet_id   Int?
+  type        transactions_type
+  category    String?
+  amount      Decimal
+  description String?
+  created_by  Int?
+  created_at  DateTime @default(now())
+  wallet      wallets? @relation(fields: [wallet_id], references: [id])
+  user        users?   @relation("created_by", fields: [created_by], references: [id])
+  allocation_logs allocation_logs[]
+}
+
+enum transactions_type {
+  income
+  expense
+}
+
+model revenue {
+  id          Int      @id @default(autoincrement())
+  source      String?
+  amount      Decimal?
+  period_start DateTime?
+  period_end  DateTime?
+  created_at  DateTime @default(now())
+}
+
+model cashflow_rules {
+  id         Int      @id @default(autoincrement())
+  wallet_id  Int
+  category   String
+  percentage Decimal
+  created_at DateTime @default(now())
+  wallet     wallets @relation(fields: [wallet_id], references: [id])
+}
+
+model allocation_logs {
+  id            Int      @id @default(autoincrement())
+  transaction_id Int
+  wallet_id     Int
+  amount        Decimal?
+  created_at    DateTime @default(now())
+  transaction   transactions @relation(fields: [transaction_id], references: [id])
+  wallet        wallets @relation(fields: [wallet_id], references: [id])
+}
+
+model assets {
+  id          Int      @id @default(autoincrement())
+  name        String?
+  type        assets_type?
+  value       Decimal?
+  purchase_date DateTime?
+  owner_id    Int?
+  created_at  DateTime @default(now())
+  asset_income asset_income[]
+}
+
+enum assets_type {
+  property
+  vehicle
+  stock
+  crypto
+  other
+}
+
+model asset_income {
+  id          Int      @id @default(autoincrement())
+  asset_id    Int?
+  type        asset_income_type?
+  amount      Decimal?
+  received_on DateTime?
+  created_at  DateTime @default(now())
+  asset       assets? @relation(fields: [asset_id], references: [id])
+}
+
+enum asset_income_type {
+  rental
+  dividend
+  interest
+  other
+}
+
+model investments {
+  id          Int      @id @default(autoincrement())
+  name        String?
+  type        investments_type?
+  value       Decimal?
+  acquired_on DateTime?
+  created_at  DateTime @default(now())
+  investment_income investment_income[]
+}
+
+enum investments_type {
+  stock
+  real_estate
+  crypto
+  fund
+  other
+}
+
+model investment_income {
+  id          Int      @id @default(autoincrement())
+  investment_id Int?
+  amount      Decimal?
+  received_on DateTime?
+  created_at  DateTime @default(now())
+  investment  investments? @relation(fields: [investment_id], references: [id])
+}
+
+model events {
+  id          Int      @id @default(autoincrement())
+  title       String?
+  description String?
+  start_datetime DateTime?
+  end_datetime DateTime?
+  location    String?
+  status      events_status @default(upcoming)
+  created_by  Int?
+  user        users? @relation("created_by", fields: [created_by], references: [id])
+  created_at  DateTime @default(now())
+}
+
+enum events_status {
+  upcoming
+  ongoing
+  completed
+}
+
+model tasks {
+  id          Int      @id @default(autoincrement())
+  title       String?
+  description String?
+  assigned_to Int?
+  priority    tasks_priority @default(medium)
+  due_date    DateTime?
+  status      tasks_status @default(pending)
+  user        users? @relation("assigned_to", fields: [assigned_to], references: [id])
+  created_at  DateTime @default(now())
+}
+
+enum tasks_priority {
+  low
+  medium
+  high
+}
+
+enum tasks_status {
+  pending
+  in_progress
+  completed
+}
+
+model documents {
+  id            Int      @id @default(autoincrement())
+  owner_type    documents_owner_type
+  owner_id      Int
+  document_type documents_document_type
+  file_path     String?
+  uploaded_by   Int?
+  uploaded_at   DateTime @default(now())
+  user          users? @relation("uploaded_by", fields: [uploaded_by], references: [id])
+}
+
+enum documents_owner_type {
+  client
+  prospect
+  user
+  company
+  asset
+}
+
+enum documents_document_type {
+  National_ID
+  Letter_from_Imam
+  Letter_from_Priest
+  Letter_from_Kadhi
+  Letter_from_LCI
+  Letter_from_GSO
+  Other
+}
+
+model budgets {
+  id          Int      @id @default(autoincrement())
+  wallet_id   Int?
+  category    String?
+  amount      Decimal?
+  period_start DateTime?
+  period_end  DateTime?
+  created_at  DateTime @default(now())
+  wallet      wallets? @relation(fields: [wallet_id], references: [id])
+}
+
+model forecasts {
+  id            Int      @id @default(autoincrement())
+  type          forecasts_type
+  expected_amount Decimal
+  period_start   DateTime?
+  period_end     DateTime?
+  created_at     DateTime @default(now())
+}
+
+enum forecasts_type {
+  income
+  expense
+  revenue
+}
+```
