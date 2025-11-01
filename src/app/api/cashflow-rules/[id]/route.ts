@@ -6,8 +6,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const rule = await query("SELECT * FROM cashflow_rules WHERE id = :id", { id: params.id });
-    return NextResponse.json(rule[0]);
+    const cashflowRule = await query("SELECT * FROM cashflow_rules WHERE id = :id", { id: params.id });
+    return NextResponse.json(cashflowRule[0]);
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
@@ -28,7 +28,7 @@ export async function PUT(
         id: params.id
       }
     );
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: "Cashflow rule updated successfully" });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
@@ -40,7 +40,7 @@ export async function DELETE(
 ) {
   try {
     await query("DELETE FROM cashflow_rules WHERE id = :id", { id: params.id });
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: "Cashflow rule deleted successfully" });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
