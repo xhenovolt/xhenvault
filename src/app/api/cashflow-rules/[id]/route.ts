@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { query } from "../../../../lib/mysql";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const cashflowRule = await query("SELECT * FROM cashflow_rules WHERE id = :id", { id: params.id });
+    const { id } = params;
+    const cashflowRule = await query("SELECT * FROM cashflow_rules WHERE id = :id", { id });
     return NextResponse.json(cashflowRule[0]);
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
@@ -14,10 +15,11 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = params;
     const body = await request.json();
     await query(
       "UPDATE cashflow_rules SET wallet_id = :wallet_id, category = :category, percentage = :percentage WHERE id = :id",
@@ -25,7 +27,7 @@ export async function PUT(
         wallet_id: body.wallet_id,
         category: body.category,
         percentage: body.percentage,
-        id: params.id
+        id
       }
     );
     return NextResponse.json({ message: "Cashflow rule updated successfully" });
@@ -35,11 +37,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await query("DELETE FROM cashflow_rules WHERE id = :id", { id: params.id });
+    const { id } = params;
+    await query("DELETE FROM cashflow_rules WHERE id = :id", { id });
     return NextResponse.json({ message: "Cashflow rule deleted successfully" });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
