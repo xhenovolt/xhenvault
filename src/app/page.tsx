@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import Dashboard from "../components/Dashboard";
 import React from "react";
@@ -10,20 +11,18 @@ export default function Home() {
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-5xl md:text-7xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 drop-shadow-lg"
+        className="text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-transparent bg-clip-text"
       >
         XhenVault
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="max-w-2xl text-center text-lg md:text-2xl mb-8 text-gray-300"
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="text-xl text-gray-300 text-center max-w-2xl"
       >
-        The ultimate futuristic platform for managing prospects, clients, income,
-        expenses, assets, appointments, passive income, and more. Experience
-        advanced analytics, real-time insights, and stunning visuals—all in one
-        secure, customizable system.
+        Your comprehensive business management platform for CRM, finance, and
+        operations.
       </motion.p>
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
