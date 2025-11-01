@@ -7,8 +7,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const client = (await query("SELECT * FROM clients WHERE id = :id", { id })) as any[];
-    return NextResponse.json(client[0] || null);
+    const cashflowRule = (await query("SELECT * FROM cashflow_rules WHERE id = :id", { id })) as any[];
+    return NextResponse.json(cashflowRule[0] || null);
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
@@ -22,19 +22,15 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     await query(
-      "UPDATE clients SET prospect_id = :prospect_id, company_id = :company_id, name = :name, contact = :contact, email = :email, status = :status, start_date = :start_date WHERE id = :id",
+      "UPDATE cashflow_rules SET wallet_id = :wallet_id, category = :category, percentage = :percentage WHERE id = :id",
       {
-        prospect_id: body.prospect_id || null,
-        company_id: body.company_id || null,
-        name: body.name,
-        contact: body.contact || null,
-        email: body.email || null,
-        status: body.status || 'active',
-        start_date: body.start_date || null,
+        wallet_id: body.wallet_id,
+        category: body.category,
+        percentage: body.percentage,
         id
       }
     );
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: "Cashflow rule updated successfully" });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
@@ -46,8 +42,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await query("DELETE FROM clients WHERE id = :id", { id });
-    return NextResponse.json({ success: true });
+    await query("DELETE FROM cashflow_rules WHERE id = :id", { id });
+    return NextResponse.json({ message: "Cashflow rule deleted successfully" });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
